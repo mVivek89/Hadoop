@@ -1,0 +1,361 @@
+Shared IP: //192.168.1.132 --> Big Data
+
+The password for the pdf files is hdp. --> evenkat.com
+
+The stuff which you should have in your systems
+
+1) cloudera-demo-0.3.7.vmwarevm.tar.bz2 --> Cloudera Image
+2) ubuntu.rar --> Basic / Vanilla Ubuntu 12.4 Image
+
+On your desktop --> check if you have the VMWare WorkStation shortcut
+
+3 popular virtualization software's
+
+1) VMWare
+2) Hyper-V
+3) Virtual Box
+
+============================>
+
+Modules offered as a course
+
+1) Developer Course --> L0
+2) Admin Course --> L0
+3) Apache Spark & Apache Storm --> L1 [ pre req is the developer course ]
+
+	--> multiple project specific course
+
+2 Generations of Hadoop
+
+1) Hadoop1 --> Which is currently implemented in the bank
+
+2) Hadoop2 --> Oct 15 of 2013 --> Some of the new projects getting into Hadoop2. [ Apache Spark - Storm ] 
+
+House Keeping
+
+--> Hard Start - 10.15
+--> First Break at 11.45 --> 15 min
+--> Lunch Break at 1.30 --> 45 min
+--> Second Break at 3.45 --> 15 min
+--> Wrap up by 5.45
+
+--> Every day there will be abou to 30 - 45 reading / watching video - as a pre for the next day
+
+OLTP			v/s			OLAP
+
+Transaction 					Analytical
+Single User					Bunch of Users
+Real Time						Batch Processing
+RDBMS						Data Warehouse / MPP
+NoSQL						Hadoop
+
+
+https://university.mongodb.com/ --> look at 101 for Java Dev and 102 for DBA's
+
+ETL --> Extract, Transform, Load --> Reporting / Visualization
+
+Software's for ETL in Hadoop --> Talend, Pentaho
+
+Technologies for ETL in Hadoop --> Pig, Hive
+
+Reportings / BI tool --> Cognos, BO, Microstrategy
+
+Visualization tools --> Tableau, QlikView, Jasper Reports
+
+1 Million [ 10 lacs - records ] - 9 cols --> 86 MB
+
+Processor		8 				1 core			
+memory		90GB				3.5GB
+
+		RDBMS		DWH / MF	Hadoop
+
+load 		1 min		1 min		4  - 6 sec
+
+select col1, col2
+from table
+[non indexed ] 	1 min		45 sec		35 - 45 sec
+
+10 m		10 min				60 - 75 sec				
+50
+100m
+150m						less than 7 min
+
+===============================================================>
+
+Kept your cloudera and ubuntu files for extraction -->
+
+What is Big Data?
+
+--> Processing huge volume --> Storage and Processing
+
+--> Velocity of data --> Speed of data arrival --> AML, Fraud, Intra day, Trade Settlements
+
+--> Variety of Data-->
+
+--> Veracity --> Data accuracy --> Value
+
+http://business.time.com/2013/08/06/big-data-is-my-copilot-auto-insurers-push-devices-that-track-driving-habits/
+
+3 types of data
+
+--> Structured --> row / col --> schema
+--> Semi-Structured --> Cannot be in row / cols - logs, emails, blogs, json, xml --> Textual
+--> UnStructured --> Audio, Video, Images
+
+--> boston bombing big data
+
+Big data is a term for data sets that are so large or complex that traditional data processing applications are inadequate [ RDBMS & DWH ] . Challenges include analysis, capture, data curation, search, sharing, storage, transfer, visualization, querying, updating and information privacy.
+
+Actual Framework for implementing Big Data --> Hadoop
+
+Adhar: https://www.youtube.com/watch?v=08sq0y8V1sE
+
+What is Hadoop:
+
+Apache Hadoop is an open-source software framework for distributed storage and distributed processing of very large data sets on computer clusters built from commodity hardware.
+
+What is Commodity Hardware? No Dual Power Supply, No RAID, Limited Memory [ 8 GB ], Processor dual core.
+
+Commercial Distributions of Hadoop [ The basic hadoop software is given by ASF ] 
+
+1) Cloudera		--> Cloudera Manager
+2) Hortonworks		--> Ambari
+3) Pivotal
+4) MapR
+5) HD Insight
+6) Big Insights
+
+-------------> 
+
+In the cloudera image, hadoop is already installed by default and the services [ 5 services ]  is automatically started when we booted up the vm.
+
+Hadoop is primarily composed of 2 components
+
+1) HDFS --> Storage layer
+2) Map Reduce --> Processing layer
+
+=========================> HDFS Architecture
+1) Master - Slave Arch: Master [ Server Grade system ] , Slaves [ Commodity Systems]
+2) Concept of Block: Smallest unit of storage --> size - 4 k. Where as in Hadoop1 --> 64 MB and in Hadoop2 --> 128 MB
+3) Redundancy is built into Hadoop via Replication factor: Every block is by default replicated across multiple nodes and we will have 3 copies of data. This is however configurable at the file level granurality.
+9 node cluster example.
+Client A: --> Add a file called sample [ 100 MB ] to the cluster
+
+				Master
+
+1	2	3	4	5	6	7	8	9
+64	36			64	36		64	39
+
+1) Whom will the client talk to? [for adding the data ] --> Master
+2) How will the client know who the master is --> via config files in the hadoop setup. So the client should also client component of hadoop available.
+3) What will the response of the master will be to the first request? 
+	--> The master will first authenticate the client and also check his authorizations.
+	--> He will respond back with the node availability. 
+4) How many IPs will the master give the client back as the response.--> 6 Ips
+	64 [ 1, 5, 8 ]
+	36 [ 2, 6, 9 ] --> Write Pipeline
+5) Will any hard disk space will be lost because we only have 36 mb out of the 64 MB that can be put in a block? The size of the 2nd block is 36 only.
+6) How will the first node for a block decided? based on network proximity between the client and slaves.
+7) How are the other nodes decided? Based on Availability AND NOT PROXIMITY.
+8) Will the client write the data parallely to node 1 and node 2 in our case? YES
+9) Who will split the data into 64 and 36. The client or the Edge Node
+10) When will replication start? Immediately when the data is being written to node 1 and node 2. Node1 will give it to Node 5 and Node 5 will give it to Node 8.
+11) When will the write completed info go back the client. After all the replications are done.
+
+--> HDFS is a virtual file system which is a layer above the HDD of each of the slaves.
+--> We will be able to see the file called sample only in HDFS
+--> In the nodes, we will only be able to see the blk files.
+--> The metadata of the cluster is stored in the Master
+
+---------------------> Post Lunch
+deamon: Java background process running 
+--> To check the processes running? --> jps [ Java Process Status Viewer ]
+--> ps -ef |grep java --> check the heap size of your deamons
+
+
+		HDFS		Map Reduce
+
+Master		NameNode	JobTracker
+
+Slave		DataNode		TaskTracker
+
+		SecondaryNameNode
+		[backup node / checkpointing node ]
+
+job: Any analysis that we want to perform on the data
+
+task: Actual work done on the node based on blocks.
+
+To check the port outside the image: ifconfig - Inet Address of the image - 192.168.XXX.XXX
+
+Which is the default embedded web server that gets started with hadoop starts? Apache Jetty
+
+2 ways to view the contents of hdfs
+
+a) hadoop fs -ls /		AND
+b) browse the file system from 50070 port no.
+
+3 techniques of hadoop deployment
+
+1) Standalone mode --> default --> Where there is no HDFS and no deamons are running
+2) Pseudo Cluster mode --> All deamons would be running in 1 machine
+3) Fully Distributed mode --> Different deamons would be running different machines
+
+4 node fully distributed cluster
+
+master	{	NN	SNN	JT	} --> 3 physically different machines
+
+slaves	{	DN+TT	DN+TT	DN+TT	DN+TT	} --> 4 physical machines
+
+When hadoop starts, there will always be 1 block by default.
+
+=================> Location of metadata and data
+
+Master Terminal Window:
+MetaData Location: /var/lib/hadoop-0.20/cache/hadoop/dfs/name/current
+							size
+	fsimage	--> snapshot of the metadata at a point of time	1667
+	edits 	--> kind of redo log				4
+
+Slave Terminal Window: 
+Data Location: NOTE, we will have to log in with the hdfs user as cloudera user does not have the permission.
+
+	sudo su hdfs --> password is cloudera
+
+Data Location: /var/lib/hadoop-0.20/cache/hdfs/dfs/data/current
+
+	1 blk file
+	1 .meta file - which is the checksum file for that block.	
+
+Client Window --> Simulate a file injestion
+
+1) From the /home/cloudera directory --> gedit sample --> Put two lines into this file and save it.
+2) check for the size of the file. 35 kb
+3) hadoop fs --> press enter to see the various options that we have the fs command.
+4) hadoop fs -copyFromLocal sample /
+5) check if the file is copied in both the ways.
+6) What will happen in the metadata location?
+	fsimage
+	edits --> will increase in chucks of 1.1 MB [ Note this is the metadata ] 
+	Note: The 1.1MB here is the metadata and not the data. The size will only increase if the metadata goes beyond 1.1MB or CHECKPOINTING happens
+7) What will happen in the data location?
+	new .blk file + a corresponding .meta file will be created. 
+	What is the size of the .blk file --> same as the size of the file if less than 64 MB
+	How to view the contents of the .blk file --> cat
+
+================> Failure scenarios in Hadoop
+
+				Master
+
+1	2	3	4	5	6	7	8	9
+64	36			64	36		64	39
+
+							     Client B
+						Analyse the file sample
+					read pipeline [ 8,5,1 ]
+						    [ 9,6,2 ]
+
+Every 3 sec there is a heart beat from the slave to the master.
+
+a] While Writing
+ --> Primary Node: [1,2 ]--> If Node 1 goes down after 60 MB of data is written?
+
+a) Will the client be aware of the failure? YES.
+b) What should the client do now? Re-submit the request and now a new pipeline will be created which will not have the node which is down.
+c) What will happen to the 60MB of data that was written on Node1 and replicated on 5 and 8? The data will be present and is called zombied data. The admins will have to physically remove the zombied data.
+d) Should the client resubmit the whole 100 mb? YES. The 36 MB of data is also zombied data.
+
+--> Node 8 goes down after 60MB of data is written?
+
+a) Will the client be aware of the failure? No
+b) What will the framework do? It will assign another node inplace of node 8, it will tell node 5 to write the complete data to new node.
+
+======================> under which user the deamons are running?
+
+There are 2 users under which the cloudera starts the HDFS and MR services and they are the hdfs and mapred users.
+
+======================> Let us load the Ubuntu image and make changes [ memory and the Network Adapter ]
+
+==> Power on the Ubuntu system.
+
+Open --> ToShare -- Setup Documents - Hadoop_Setup.pdf
+
+1) start putty --> connect using IP ADDRESS of the image
+2) Winscp --> Install and connect it using IP ADDRESS of the image
+
+Steps for installation hadoop in Ubuntu 12.4
+
+1) extract hadoop1.0.3 in lab/software directory
+2) Make changes in the .bash_profile and reexecute it
+3) Check the working with java -version and hadoop version
+4) How to remove the warning? --> HADOOP_HOME is deprecated
+
+	a) comment the HADOOP_HOME in the .bash_profile [ # ]
+	b) unset HADOOP_HOME
+	c) check with hadoop version
+5) create the 3 directories in lab/hdfs, chmod 755 on datan1 folder and create 2 directories in the lab/mapred
+6) configure the 3 xml file
+
+	How many components do we have in hadoop
+
+a) core 		--> common to both mapred and hdfs	
+b) hdfs 		--> hdfs usage
+b) mapred		--> mapred usage
+
+The name of the main configuration files would be ComponentNAME-site.xml inside the conf directory.
+The default listing of all config file are in the hadoop-1.0.3/src directory
+
+For every component, there is a folder and inside that folder there will be ComponentNAME-default.xml file.
+
+
+core-site.xml
+
+1) fs.default.name--> IP ADD of the NN
+<final>true<final> --> This value cannot be changed after the server is started up. --> -D
+2) fs.checkpoint.dir
+
+hdfs-site.xml -->
+
+1)dfs.name.dir
+2)dfs.replication
+3)dfs.data.dir
+
+By Default how many jvms would be running in hadoop [ 5 ] 
+NN	SNN	DN	JT	TT	--> ps -ef |grep java --> 1000MB 
+
+mapred-site.xml
+
+1) mapred.job.tracker
+2) mapred.local.dir
+3) mapred.system.dir
+4) map.tasks.maximum
+5) reduce.tasks.maximum
+6) child.java.opts
+------------------------------>
+
+7) format the NN
+
+8) make changes in the hadoop-env.sh file
+
+9) start the dfs services
+
+10) start the mapred services
+
+	===> our hadoop single is up and running
+
+1) Check the 50070 [ HDFS ] and 50030 [Map Reduce ]port nos in the browser. 
+
+--> What is 8020 and 50070 port nos? 8020 is the RPC port and 50070 is the http port no.
+
+Pre-Req for tomorrow
+
+1) Chapter 1 of the Hadoop Definitive Guide
+2) Watch MapReduce with Playing Cards video
+
+
+--> stop-all.sh --> Stop the services
+
+Power off the VM
+
+
+

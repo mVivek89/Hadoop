@@ -1,0 +1,396 @@
+Stuff done on Day 1
+
+1) What is Big Data
+2) What is Hadoop
+3) HDFS Architecture [ Write and Read ]
+4) Loaded Cloudera Image and interacted with HDFS
+5) Location of the metadata and the actual data
+6) How to injest a file in HDFS and saw the changes in the metadata and data
+7) Some use cases of Hadoop
+8) Failure Scenario in Hadoop
+9) Ubuntu Image - setup the single node cluster - confirmed via jps that the services are running
+
+==========================>
+
+The access pattern in hadoop--> WORM --> Write Once Read Many
+
+Ensure that all services are started --> 5 services
+
+3 ways of hadoop deployment
+
+1) On Prem - Physically
+2) On Prem - Virtually - Hypervisor
+3) On Cloud - AWS, Azure, Rackspace 
+
+Use Cases of Hadoop
+
+1) https://wiki.apache.org/hadoop/PoweredBy
+2) http://hadoopilluminated.com/hadoop_illuminated/Hadoop_Use_Cases.html
+3) http://www.cloudera.com/customers.html
+
+===================================>
+
+Checkpointing --> edits and fsimage
+
+--> Where is the metadata of a hadoop cluster?
+
+	On the NN --> Where?
+
+1) It is present in the memory of the NN	PLUS
+2) a persisted copy is in fsimage and edits.
+
+https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html#The+Persistence+of+File+System+Metadata
+
+https://hadoop.apache.org/docs/r1.2.1/hdfs_user_guide.html#Secondary+NameNode
+
+4 categories of machines in a hadoop cluster
+
+NN	--> core-site.xml
+SNN	--> masters
+JT	--> mapred-site.xml
+Slaves	--> slaves [ you will mention the individual ip seperated by a new line ]
+
+In Hadoop1 --> The SNN is only for having the metadata available on a different machine plus to do checkpointing. It is not a hot backup for the NN. So if the NN goes down, the SNN will not come up automatically.
+
+NN				SNN
+
+fsimage
+edits
+
+11.18 --> A client adds a new file to the cluster. After the write confirmation comes from the client.
+	a) The main memory will be updated
+	b) entry will be made in the edits file
+
+--> at the checkpointing time: The SNN will copy the fsimage and edits to its local machine. It will load the fsimage in to memory of the SNN system and apply the edits in the memory and then flush out this new fsimage onto the disk and truncate the edits file. It will then copy the new fsimage back to the NN system also.
+
+What is the take away from the 4 day training?
+
+--> POC  
+https://nycopendata.socrata.com/data
+https://www.kaggle.com/competitions
+https://data.gov.in/
+
+--> Certification
+http://www.cloudera.com/training/certification.html
+http://hortonworks.com/training/
+
+===================> Lab 2
+
+finished it
+
+=====================> Post Morning Break
+
+Data Analytics have changed with the Data Lake Concept --> slide 13, 14 of HDFS.pdf
+
+https://wiki.apache.org/hadoop/Distributions%20and%20Commercial%20Support
+
+cloudera --> pre-packaged good for testing
+ubuntu --> install hadoop
+
+-----> Processing Part of it
+
+1) Map Reduce? --> functional programming language
+Name came from a language called as LISP. It is actually 2 seperate functions in processing.
+
+2 parts of any object? Properties & methods
+
+OOP			v/s		Functional
+
+state					behaviour - stateless
+Java					Scala
+
+2) Pig --> layer above MR and you can write in scripting language called pig latin.
+
+3) Hive --> layer above MR and you can write in SQL style 
+
+Type of data that you are processing
+
+1) Structured Data: hive - pig - MR
+2) Semi-Structured Data: pig - MR
+3) UnStructured Data: MR
+
+Data Engineer / Data Analysts --> Do not know --> Hive and Pig
+
+========================================> IDC
+
+			2015			2017
+
+Structured			85			30
+
+Semi Structured		10			35
+
+UnStructured		  5			35
+
+===========================================>
+
+What are the 3 pre req information required before processing?
+
+1) Data Set which we are going to process
+2) What is the result of the analysis
+3) What is a record? The default is a new line [ record seperator ] 
+
+DataSet1
+	How are you
+	I am fine
+	
+How many records? 2
+
+DataSet2
+
+	Venkat
+	M
+	Krishnan
+	Sudhindra
+	B
+	Anantha
+
+How many records? Only 2 records here [ FN, MN, LN ]
+
+DataSet3
+	Video	--> 640 MB
+
+How many records? Only 1 record
+How many blocks? 10 blocks
+while processing, will distributed processing happen here? NO as the unit is a single unit.
+
+What happens in MR processing -->
+
+--> 1st Stage --> Mapping --> Pick what u want from a record. --> map()
+
+0000003,06-05-2011,4002199,198.19,Gymnastics,Gymnastics Rings,Milwaukee,Wisconsin,credit
+00000004,12-17-2011,4002613,098.81,Team Sports,Field Hockey,Nashville  ,Tennessee,credit
+00000005,02-14-2011,4007591,193.63,Outdoor Recreation,Camping & Backpacking & Hiking,Chicago,Illinois,credit
+00000006,10-28-2011,4002190,027.89,Puzzles,Jigsaw Puzzles,Charleston,South Carolina,credit
+00000007,07-14-2011,4002964,096.01,Outdoor Play Equipment,Sandboxes,Columbus,Ohio,credit
+
+--> 2nd Stage --> Shuffle & Sort --> Bring together all the values for the similar key.
+
+--> 3rd Stage --> Reduce --> Perform some aggregation
+
+-----> Understanding the Map Reduce Process
+
+5 Node Cluster in which we will be doing the processing
+
+		1	2	3	4	5
+			64		36
+M1			YES		YES
+M2
+M3
+	Intermediate Results	YES		YES
+		JT will assign a reducer to perform the shuffling
+		How many reducer will be there per job --> only 1
+R1
+R2				YES
+R3
+
+1) Input: Here we are referring to a block.
+
+2) Splitting phase: 2  types of splitting
+	
+	Block Splitting:	Writing		physical
+	Record Splitting
+	Input Splitting:	Reading		logical
+
+3) Mapping Phase: Pick what i want from a record and write it out.
+
+	The write out happens to the local1 directory that we had mentioned in mapred.local.dir property in mapred-site.xml
+
+4) Shuffling Phase:
+
+	Who controls the shuffling?	Master of Processing - JT
+
+	Who actuall does the shuffling --> Reducer JVM
+
+The JT can assign any reducer JVM to perform the reducing as data locality is not considered for the reducers.
+
+What should the assigned Reducer do now?
+
+	1) Poll the nodes where the intermediate results are stored [ based on the info given by the JT ] 
+
+	The default shuffling technique is based on the hash for the key. [ distinct ] 
+
+5) Reducing Phase: This phase will start only after the shuffling phase is completed and here the reducer does the second part of its work.
+
+	2)Calling the reduce function
+
+6) Output phase: The results of the reducing is written to a directory mentioned earlier.
+
+=============================>
+
+Memory Considerations
+
+Single Node Cluster --> 5 deamons [ 5 GB ] 
+		Maps - 3 * 400 = 1.2
+		Reducers - 3 * 4 =  1.2
+		Total ==> 7.4
+
+==>
+stop-all.sh on the Ubuntu VM and start with the Cloudera VM
+
+==========================>
+
+teragen and terasort are the benchmarking applications of hadoop
+
+--> http://www.systutorials.com/3235/hadoop-terasort-benchmark/
+
+hadoop jar hadoop-examples.jar teragen 500000 /jpmc [ 500000 is the number of 100 byte rows to be generated and /jpmc the output folder in HDFS]
+a) Show how many maps are used
+b) Job ID and c) Counter [ statistical information ] about the job.
+
+--> How to check what is the results in the output folder [ hadoop fs -ls /jpmc or browse ]
+--> By default every job will have the following results
+	a) _SUCCESS file		b) _logs directory
+	c) multiple part files which has the actual data. [ part-00000 and part-00001 ]
+--> How to view the contents of the part file [ browse the file system ].
+--> What is the logic of the 100 byte record.
+a) The first 10 bytes are randomly generated alpha numeric special chars --> keys
+b) The next 10 bytes are for the line number --> right justified 
+c) The next 70 bytes are Capital Alpha with each alpha repeated 10 times. A - G
+d) The next 8 bytes is the next Capital Alpha in the sequence - H
+d) The last 2 bytes are CRLF.
+
+a) Check the job tracker page and tell me how much it took for .5 Million record generation
+
+====================> Post Lunch
+
+Let us work on Terasort
+
+--> hadoop jar hadoop-examples.jar terasort /jpmc /sorted
+
+a) Check in the JT [ 50030 ]  how much time it took for sorting .5 Million. --> 21 sec
+b) Confirm in the NN [ 50070 ], that the results are sorted or not?
+
+Let us run the word count example. --> slide 69 to 72
+
+==============================>
+
+--> Close your Cloudera VM and start with the Ubuntu VM
+--> start-all.sh --> confirm with jps that all 5 deamons are up and running
+
+Pre-Req for any MR job --> Dev perspective?
+
+1) IDE 	--> eclipse
+2) Java 	--> program files / program files (x86) and check if you have a java folder: JDKXXX 
+
+Any MR program will have 3 codes
+
+a) Mapper Class
+b) Reducer Class
+c) Driver Class
+
+How to write 
+
+a) Tightly coupled code --> Inner Classes
+b) Loosely coupled code --> Normal Classes
+
+--> Extract Hadoop 1.0.3 in windows.
+
+The libraries can found 
+
+a) 7 jar files in the root of Hadoop
+b) multiple jar files in the lib directory of Hadoop.
+
+There are 2 ways of adding dependencies
+
+1) Add External Jars --> The Dependent jars are sure to be at the runtime place and hence need it only during compile time. --> The jar size will be small.
+
+2) Add Jars --> The dependent jars are not available at runtime and hence we are forced to include that within our jar file. This will increase the jar size, but we have no otion.
+
+Q1: Should my Final jar include the dependencies or not
+
+Ans:
+a)	If YES, how to do it
+	1) create a lib folder within your project and have those dependencies over in the lib folder and then built it --> Now we will have to use Add Jars here
+	2) If you are using maven, use assembly  plugins.
+
+	Will the size of my Final.jar will be big here? YES
+
+b) 	If No, then i am sure that my dependencies will be available at runtime
+	Package in any fashion.
+
+If we look at the .classpath file that gets created -->
+
+	a) In case of Add Jars --> The relative location of the jars are kept here and not the absolute path.
+	b) In case of Add External Jars --> The absolute location of the jars are considered, since we need those jars only at COMPILE TIME.
+
+====================================================> Post Tea
+
+There are 2 Map Reduce APIs. mapred and mapreduce package. Page 27 of the Definitive Guide. 
+
+Pre-0.20 		--> MR1 API
+1.0 onwards 
+	--> MR2 API
+
+--> Went through the WordCount Java Code
+
+Mapper <K1, V1, K2, V2> --> Generics
+
+InputFormat --> responsible for the record splitting --> default is TextInputFormat
+RecordReader --> responsible for creating key-value pairs
+
+What is LongWritable, Text etc? --> Hadoop Data Types --> so that we can use the Avro format of serialization.
+
+---> Location of the Sysout statements
+
+---> The benefit of the Combiner class -->
+
+Dataset: 1901_S
+Purpose: To find the max temp per year
+Record: New Line
+
+Code: MaxTemp.java
+
+1) Create the jar file
+2) move the jar file to programs directory in ubuntu
+3) move the data file to data folder via winscp
+4) hadoop fs -copyFromLocal 1901_S /input
+5) hadoop jar Name.jar com.jpmc.MaxTemp /input/1901_S /output/MaxTemp
+
+--> check in the NN page --> 50070 and give the max temp per year
+
+1901 --> -72
+1902 --> -117
+
+Step 2: Run the same jar file with the 1901_C [ combined dataset of 1901 and 1901 ]  and we will see how to improve the performance.
+
+1901_C dataset : it has 2 years of records.
+--> it has 6565 readings per year
+--> total of 13130 records
+
+Disk IO 		--> Spilled Records		26260
+Network IO	--> Reduce Shuffle Bytes 	144430 or 0
+
+How to improve performance here? By ensuring that similar keys is already grouped based on the key at the mapper level itself. This is done by using a class called Combiner which is a mini reducer.
+
+Step 3: Add the job.setCombiner(MaxReducer.class) in the driver code and recreate the jar and execute it.
+
+Disk IO 		--> Spilled Records		4
+Network IO	--> Reduce Shuffle Bytes 	28 or 0
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+=================> Pre-Req for 2nd day
+
+GFS white paper --> research.google.com/archive/gfs-sosp2003.pdf
+
+MR white paper --> research.google.com/archive/mapreduce-osdi04.pdf
+
+Sanjay Ghemawat's talk: https://www.youtube.com/watch?v=NXCIItzkn3E
+
+
+
+
+
