@@ -1,0 +1,20 @@
+Pravin	22	M	78
+Venkat	44	M	88
+Jeeva	23	M	98
+ABC	66	M	67
+XYZ	77	M	89
+A	19	M	84
+B	18	M	67
+C	14	F	87
+D	16	F	88
+Bharati	24	F	96
+Swati	21	F	99
+X	56	F	44
+Y	59	F	66
+
+Max scorer per gender 
+	a) less than 20 years
+	b) between 20 - 50
+	c) greater than 50 year
+
+The final output should be in 3 files and each file should give me the name, age, gender,score
