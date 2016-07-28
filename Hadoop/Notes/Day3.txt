@@ -1,0 +1,368 @@
+Stuff done on Day 1
+
+1) What is Big Data
+2) What is Hadoop
+3) HDFS Architecture [ Write and Read ]
+4) Loaded Cloudera Image and interacted with HDFS
+5) Location of the metadata and the actual data
+6) How to injest a file in HDFS and saw the changes in the metadata and data
+7) Some use cases of Hadoop
+8) Failure Scenario in Hadoop
+9) Ubuntu Image - setup the single node cluster - confirmed via jps that the services are running
+
+==========================>
+
+Stuff done on Day 2
+
+1) Use Cases of Hadoop
+2) Checkpointing
+3) Lab2 - File Injestion in Ubuntu
+4) What is Map Reduce, Flow of Map Reduce [6 phases ] 
+5) teragen, terasort and wordcount applications in Cloudera
+6) Wrote the Word Count code and executed in Ubuntu
+7) Explored the java code to understand the classes
+8) Location of the sysout statements
+9) Max Temp Example with 1901_S dataset
+10) Max Temp with 1901_C dataset
+11) Understood what is a combiner and its benefits and saw that in the 1901_C dataset
+
+===========================>
+
+1) Lab 4 --> Sum [ total ] of Transactions in the txns dataset
+
+	The number of sub-products that we have in our txns dataset.
+	Reduce Output Records --> 125 products
+
+2) Unit Testing --> Junit or Mockito
+	Map Reduce has a MR Unit library which does unit testing --> testing of map and reduce functions.
+
+Steps for testing
+
+1) Pass some dummy Input value to your function
+2) Specify the expected value
+3) Run the test
+
+In MR Unit, we have 3 drivers available
+
+	1) MapDriver --> map logic
+	2) ReduceDriver --> reducer logic
+	3) MapReduceDriver --> end to end [ from map till reduce ] logic
+
+3) Partitioner --> Why? If we need a custom grouping, then we will have to use the partitioner.
+
+Java Developers --> Mapreduce cookbook and mapreduce design patterns.
+PLUS --> Chapter 4 to 8 of the Definitive Guide.
+
+===========================> Hive
+
+Why Hive? 
+
+--> Not everyone know java
+--> Most of the data we have now is structured and using MR for structured data is an over kill.
+
+Hive Compiler coverts your HQL style - sql query into MR at the back and is executed on the HDFS data.
+
+Analysis			v/s		Analytics
+
+Reports					Predictive
+RDBMS / BI				SPSS, SAS, R, Spark ML
+
+=====================> Post Morning Tea
+
+Schema on Read			v/s 		Schema on Write
+
+Data [ Hadoop]					RDBMS
+
+=================>
+
+In RDBMS --> Data which is as per the schema
+
+In HDFS --> Schema is as per the data. --> Can we do validations based on schema? No. But what can be done is transformations. [ ELT ]
+
+--> Developed by Facebook
+--> What is the default database in Hive? Apache Derby --> In memory embedded database.
+
+In Embedded databases, the application starts the database and the db shutdown when the application is closed.
+
+In Hive --> Data is in HDFS and the metadata is in Derby [ which is on the client side ] 
+
+===========================>
+
+Client			NN	JT	SNN
+
+		S1	S2	S3	S4	S5
+
+
+For hive run on the client side, hadoop should be present. 
+
+Note that hive is not a pure client component of Hadoop.
+
+Data will be in HDFS			schema / structure is in Hive [ in Derby ]
+
+
+
+=======================> Map Reduce, Spark, Eco-System
+
+Hadoop1			HDFS+MR+Eco-system components
+
+	Map Reduce --> Actually mean
+
+a) API
+b) Runtime --> JT + TT --> Resource Management 
+c) Framework --> General Programming framework map and reduce.
+
+Biggest Limitation of Hadoop1 was that other workloads were not possible to be executed in Hadoop1.
+
+	a) In Memory --> Apache Spark
+	b) Streaming --> Apache Storm
+	c) Graph --> Apache Giraph
+	d) Search	--> SOLR / Elastic Search
+	e) Other parallel processing languages --> MPI [ Message Passing Interface ]
+
+Oct 15 -- 2013, they brought about Hadoop2 in which they seperated the Resource Management from the API and brought about a new layer called YARN [ Yet Another Resource Negotiator ]
+
+With YARN, i can plugin any Processing layer and use the HDFS data via YARN.
+
+There is nothing called Hive or Pig in Spark and the new names are Spark SQL and SPORK.
+
+============================================>
+
+1) show databases;
+2) show tables;
+
+We do not know in which database we are in -->
+
+exit; --> To come out of the hive shell.
+
+Setting to be done to make hive work efficiently -->
+
+1) Display the database name in the command prompt
+2) Display the column headers where firing a retrieval code
+3) We should ensure that where ever we start hive from, it will point to a common folder for metastore_db
+
+	/home/notroot 	--> hive --> It will launch derby. You will create a database, a table, load rows into the table	--> The meta data is in the memory in derby.
+			--> exit ; It will close derby - It will persist the memory to a folder in the location where hive was started --> metastore_db folder.
+
+Note: The schema is on the client side. ONLY the data is in HDFS.
+
+	/home/notroot/lab	--> hive --> Is this the same instance of derby or a different instance? This is a different one.
+
+	How to ensure that there will be a common folder location:- Connection String.
+==============================>
+So where to make the above changes.
+
+1) open hive-default.xml.template --> 
+2) create hive-site.xml inside the conf directory
+3) copy the first 2 lines from default to the site file
+4) create a <configuration> and a </configuration> tag in site xml file.
+
+a) cli.print.header
+b) cli.print.current.db
+c) javax.jdo.option.ConnectionURL
+
+https://archanaschangale.wordpress.com/2013/09/05/changing-default-metastore-derby-of-hive-to-mysql/
+
+
+start hive --> (default)
+show databases; 
+
+========================>
+
+hive			hdfs
+
+database			folder --> /user/hive/warehouse
+table
+ - Internal			folder within the database folder
+ - External			folder anywhere in HDFS
+rows			files within the table folder.
+
+==========================>
+
+1) create database retail ;
+
+	hive: show databases; --> new data base created
+	hdfs: a new folder will be created inside the /user/hive/warehouse directory called DatabaseNAME.db
+
+2) use retail; For going inside the database --> (retail)
+
+3) create a internal table called txnrecords --> 
+
+	hive: show table; --> new table being created
+	hdfs: a new folder will be created inside retail.db
+
+	DO NOT CREATE the external table now
+
+4) load the data into the hive table --> client will do this. --> copyFromLocal --> less than 4 sec
+
+	hive: select count(*) from txnrecords; 1000000  --> 35 ~ 40 sec
+	hdfs: a new file will be created inside the txnrecords directory
+
+	Total Time
+
+1 M	41			4 sec		
+10M	67			20
+50M
+100M
+150M	379			200
+
+===============================> Post Lunch
+
+select count(distinct txnno) from txnrecords; --> same time
+
+Difference between Internal and External Table
+
+1) Location of data
+Int	: in /user/hive/warehouse/Database.db/Table folder [ This is also HDFS ]
+Ext	: Any location in HDFS	
+
+2) Syntax
+Int	: Normal Syntax
+Ext	: The word external should be after the create word and the folder location should be given at the time of table create itself.
+3) Is Load reqd
+Int	:	Yes
+Ext	: 	No becoz the data is already present in HDFS
+
+
+4) Who has permission on the folder?
+Int	:	hive
+Ext	:	hdfs
+
+5) What happens when we drop the table
+Int	:	Both the schema and data will be deleted
+Ext	:	Only schema will be deleted and data will still be present in HDFS.
+
+When to use Internal v/s External
+
+1) Data is already present or your upstream puts the data in HDFS --> external
+2) It is our responsibility to add data to HDFS --> internal
+
+Hands on in External Table
+
+1) create a new folder called hivetable in HDFS --> ! hadoop fs -mkdir /hivetable
+2) Have data in hivetable --> !hadoop fs -cp /input/txns /hivetable
+3) create the external table as per the syntax.
+4) select count(*) from externaltxnrecords;
+	Will this take the same time, more time or less time that internal table? --> same time
+5) describe formatted externaltxnrecords; --> more attributes than the cols [ Table Type -- Managed or External, Table Location -- ]
+
+5) drop table externaltxnrecords;
+	hive: show table --> table is gone
+	hdfs: hadoop fs -ls /hivetable; --> data will still be present.
+
+===================> Partitioning & Bucketing
+
+1) select * from txnrecords limit 10; will there be a job? No MR job.
+
+2) select txnno, category from txnrecords limit 10; Will there be a Job? YES. Only a mapper because we are filtering in the map function.It will say that there is no reducer in this job.
+
+3) select * from txnrecords where category='Dancing'? Will this be a full table scan? YES
+
+	How to optimize the above query? ---> we will partition the table txnrecords on the category column to improve performance.
+
+	** Is partitioning physical or logical? Physical --> 
+
+	How many partitions will be created?No of distinct values for category column--> 15
+
+Why partitioning--> improve performance
+
+--> Bucketing -- Data Science concept --> Sampling of data
+
+formula-->(hash of the bucketed column value) % no of buckets --> which bucket a row will go
+
+Customer Table: 1000 rows
+Product column: 40 unique values
+
+10 Buckets / Bins of Customer data.
+
+How will 1000 rows having 40 unique values be distributed in 10 buckets?
+
+1) Will all buckets have the same number of records? NO
+2) Will all values of a individual product [ Nike Shoes ]  be in 1 bucket? YES
+3) Can a bucket have more than 1 product? YES
+4) Can a bucket have no product at all? YES
+
+Data: 1,2,3,4,5,6,7,8,9
+No of Buckets: 3
+
+B1: 1,4,7
+B2: 2,5,8
+B3: 3,6,9
+
+Hands on in partitioning and bucketing -->
+
+================================================>
+How to query a particular partition.
+
+SELECT txnno,product,state 
+FROM txnrecsbycat TABLESAMPLE(BUCKET 3 OUT OF 10) limit 10 ; --> top 10
+
+SELECT txnno,product,state 
+FROM txnrecsbycat TABLESAMPLE(BUCKET 3 OUT OF 10); 
+
+How to confirm --> 
+
+1) Open txnrecsbycat folder --> go to the first partition bucket no 2 and check the first 10 values --> 
+
+2) go to the last partition bucket no 2 to the end of the file and confirm.
+
+------------------------< 
+
+Pig --> Process both structured and Semi Structured data
+Adv of pig over hive
+
+1) Pig is a Data Flow Language --> 
+2) Pig is better than hive --> if we need Transformations of data
+3) Pig has a pure client component --> that means we do not need hadoop on the client side
+4) Hive only processes structured data, whereas pig will process semi structured data.
+
+--> Yahoo --> 2007
+
+Benefit of pig is its accessibility to statistical UDFs like Datafu
+
+https://datafu.incubator.apache.org/docs/datafu/getting-started.html
+
+1) confirm if the words file is present in HDFS by trying
+	hadoop fs -ls /input
+	A]	If not present then do the following 
+		a) create a new file in lab/data called words and put some contents
+		b) in lab/data --> hadoop fs -copyFromLocal words /input
+	B]	If else then you can proceed.
+input1 = load '/input/words' as (line:chararray);
+dump input1;
+words = foreach input1 generate FLATTEN(TOKENIZE(line)) as word;
+dump words;
+word_groups = group words by word;
+describe word_groups; --> focus on the concept of bag
+dump word_groups;
+word_count = foreach word_groups generate group,COUNT(words);
+dump word_count;
+ordered_word_count = order word_count by group desc;
+store ordered_word_count into '/output/wordspig';
+
+========================> ETL in Pig
+
+Business Use Case: Find out the top 100 customers who have purchased the most in the dataset.
+
+txns: 9 cols
+custs: 5 cols [ custid, fname, lname, age, profession ] 
+
+custid, fname, lname, age, profession, totalamtpurchases
+
+========================>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
