@@ -1,0 +1,312 @@
+Stuff done on Day 1
+
+1) What is Big Data
+2) What is Hadoop
+3) HDFS Architecture [ Write and Read ]
+4) Loaded Cloudera Image and interacted with HDFS
+5) Location of the metadata and the actual data
+6) How to injest a file in HDFS and saw the changes in the metadata and data
+7) Some use cases of Hadoop
+8) Failure Scenario in Hadoop
+9) Ubuntu Image - setup the single node cluster - confirmed via jps that the services are running
+
+==========================>
+
+Stuff done on Day 2
+
+1) Use Cases of Hadoop
+2) Checkpointing
+3) Lab2 - File Injestion in Ubuntu
+4) What is Map Reduce, Flow of Map Reduce [6 phases ] 
+5) teragen, terasort and wordcount applications in Cloudera
+6) Wrote the Word Count code and executed in Ubuntu
+7) Explored the java code to understand the classes
+8) Location of the sysout statements
+9) Max Temp Example with 1901_S dataset
+10) Max Temp with 1901_C dataset
+11) Understood what is a combiner and its benefits and saw that in the 1901_C dataset
+
+===========================>
+
+Stuff done on Day 3
+1) Sum Transaction - MR Code
+2) MR Unit - MR Code
+3) Partitioner - MR Code
+4) 
+Extracted and configured hive - created database, table, loaded records
+5) Load Testing - 150M
+6) Difference between External v/s Internal Tables
+7) What is Partitioning
+8) What is Bucketing and how to extract from a particular bucket
+9) What is Pig, Need for it, extracted and configured pig
+10) Word Count in Pig
+11) ETL in Pig
+
+------------> Start with Day 4 --> Semi Structured Data
+
+log = load '/input/sample.log' as (line:chararray)
+
+Till Now
+
+1) HDFS
+2) Map Reduce
+3) Hive
+4) Pig
+ -------------------------> Finished with Batch Processing & Moving over to OLTP
+
+What is NoSQL? Non Relational way of storing data. The data structures used are
+
+1)	Key Value  --> Redis, Riak		}
+2)	Document	 --> MongoDB, CouchDB	}
+3)	Columnar	 --> HBase, Cassandra 	} Aggregate
+4)	Graph	 --> Neo4J, Titan		} Non-Aggregate
+
+NoSQL Databases --> http://nosql-database.org/ --> count of databases
+
+Why NoSQL? --> Limitations of HDFS	&	Limitations of RDBMS
+
+Limitations of HDFS
+
+1) No Update	--> Access pattern is WORM [ Write once Read many ]
+2) No Real Time	--> Only Batch Processing
+3) No Random Read / Write --> Only file scan
+
+Limitations of RDBMS
+
+1) No Sharding of data - No Horizontal Scalability
+
+				Master
+Table: Customer - 100 rows
+
+1		2		3		4		5
+1-20		21-40		41-60		61-80	           81-100
+
+2) Table - 10 cols: select col1, col5 from table --> how many cols will be loaded in memory?
+All 10 cols will be loaded in memory which is not necessary.
+
+3) Compress some of the cols? No
+
+4) Cache some of the cols? No
+
+5) Can i add a new col dynamically at runtime when a row is added? 
+
+6) We can only have 1 value in a row - col intersection.
+
+	col1,col2,col3
+row1	--      --     --
+row2	--      --     --
+row3         --      --     --
+
+	The solution is NoSQL
+
+How did the name nosql come: Twitter Hashtag -- 2009 
+
+CAP Theorem: 
+
+It is impossible for a distributed computer system to simultaneously provide all three of the following guarantees:
+
+    Consistency (all nodes see the same data at the same time)
+
+    Availability (every request receives a response about whether it succeeded or failed)
+
+    Partition tolerance (the system continues to operate despite arbitrary partitioning due to     
+    network failures)
+
+Use Case1: 3 friends logging in IRCTC --> Bang to Mumbai Train
+	--> They log in one after the other
+	--> There are only 2 seats available
+	--> When they log in --> Will all of them see the seats available? YES
+	--> 3rd person will get a RAC / WL.
+	---> IRCTS is focussing more on what? 
+
+Use Case2: 3 friends logging in Book My Show.com
+	--> They log in one after the other
+	--> There are only 2 seats left for that movie for that time in that screen
+	--> When they book it --> will all 3 of them see the seats as available? 
+
+The application should decided where you need CP or AP. If you want to have the database to dictate what type you need [ CP or AP [ , then choose the appropriate NoSQL database.
+
+https://lh5.googleusercontent.com/c_vcKz-Jo3XmIHutpOtJxBoysMt_Ny_PL-0cB4Czh4FvIbTEpe9lObaA6sTwsdHJdrtMXqOBNCNoRxYQYnIlu9MxuYIMWcl5dgUSCADFAfOXWuyWRgKWFk99Pg
+
+====================================>
+
+HBase --> type of Columnar Data Store.
+
+The data in HBASE is sorted at disk.
+
+1) sorted on the rowid.
+2) sorted on the ColumnFamily and then the ColumnName
+
+					Table
+
+column families -->		professional		personal			
+			wloc	desig		telno			
+yesdani			bang	DBA		123	
+
+narendra				desig			mobno		
+				Java AD			456
+
+Sparse Database --< No necessarily all rows will have values for all cols
+
+https://kkovacs.eu/cassandra-vs-mongodb-vs-couchdb-vs-redis?
+
+--> Note for hbase to work, we should also need hadoop to be running. start-all.sh
+
+--> we are now working with the hbase setup.
+
+http://www.hbasecon.com/#arch
+
+There will be 3 new deamons started up now :-
+
+HMaster
+HRegionServer
+HQuourmPeer --> Zookeeper deamon
+
+Compare between HDFS and HBase
+
+1)	NN
+ --> a) talks to Client - PM			Zookeeper
+ --> b) talks to developers - TL			HMaster
+
+2)	DN				HRegionServer
+
+3)	blocks				regions
+
+I region will be served by only 1 RegionServer, but 1 RegionServer can serve multiple regions.
+
+HBase is actual a sorted MAP
+
+We saw how to create a table, add records, update records, retrieve records
+
+Saw how the data gets persisted in HDFS
+
+======================================> Programming Way of doing the above
+
+1) create a new project called HBaseExample in eclipse
+2) inside that project create a new folder called lib
+3) copy the 2 jar files from hbase root dir + all jars in the lib dir to this lib directory in the project. Drag and drop this in eclipse.
+4) create a new package called com.jpmc
+5) drag and drop the 2 java code inside this package
+6) create a jar file [call it hbase_ex.jar ] like we did in lab3 of hadoop_setup.pdf
+7) move the jar to the programs directory of ubuntu
+
+8) In the HBaseTest example, create the table and the sample family from the backend in hbase. --> create ‘sampleHBaseTable’, ‘sampleFamily’
+9) hadoop jar hbase_ex.jar com.jpmc.HBaseTest --> In this example we are demonstrating how to PUT, GET and SCAN data from a table.
+
+10) In the HBaseFirst example, we are even creating the table from the backend.
+11) hadoop jar hbase_ex.jar com.jpmc.HBaseFirst --> After running this example, check in the backend, there will be a new table called 'scores' with values added in the java code.
+
+====================================>
+
+Batch Processing --> HDFS, MapReduce, Hive and Pig
+
+OLTP Part --> NoSQL and HBase
+
+Moving Data from RDBMS to HDFS & Vice Versa --> Sqoop
+
+	--> Hadoop2 + Spark
+
+---------------------------------------------------------------------> Sqoop is for moving Transactional Data from RDBMS to HDFS.
+
+--> Sqoop is like hadoop command and does not have a shell like pig, hive or hbase.
+
+--> We will now Sqoop out [ Export ] data from custs file [ 9999 ]  records from /input/custs file into the customer table in mysql.
+
+--> MySQL is present by default in ubuntu. The only thing i have customized is the password.
+
+--> Driver should be present in a specific location.
+
+
+1) stop-hbase.sh
+2) stop-all.sh
+3) confirm that no services are running
+4) close putty, winscp and the VMWare workstation
+5) Go inside the folder Ubuntu where you extracted it
+6) Inside that you will find a ubuntu-64...... folder, which you can zip it and this will contain all the work that you have done till now.
+==========================> Hadoop 2
+
+Docs:- http://hadoop.apache.org/docs/current2/
+
+Limitations of Hadoop1
+
+1) 
+
+There was no HA for the NN. In Hadoop1, we have to manually bring the SNN up.
+
+	Hadoop 2 Resolution: There will be a active - passive NN [ No Secondary NN ], which will ensure that if active fails, passive will come up automatically.
+
+**http://hadoop.apache.org/docs/current2/hadoop-project-dist/hadoop-hdfs/HDFSHighAvailabilityWithQJM.html
+2) We are talking about Horizontal Scalability, but that is only present at the DN level. Do we have Horizontal Scalability at the NN level? 
+
+	Hadoop 2Resolution: Federation 
+
+ 
+**http://hadoop.apache.org/docs/current2/hadoop-project-dist/hadoop-hdfs/Federation.html
+
+
+3) The JT was doing 2 things 
+
+--> It was managing the Life Cycle of the jobs PLUS
+--> It was doing Resource Management for the whole cluster.
+
+	Hadoop 2 Resolution: Split these services into seperate components
+
+--> Life Cycle --> Application Master
+--> Resource Management --> Resource Manager
+
+4) In Hadoop 1, only MR processing was possible. Other workloads was not possible.
+
+	Hadoop 2 Resolution:
+
+	Introduce a seperate layer called YARN and decouple processing and resource management so that multiple workloads can work with the same Resource Management Layer
+
+Compare Hadoop1 and Hadoop2
+
+1) NN + DN				NN + DN
+
+2) JT					ResourceManager
+
+3) TT					NodeManager
+
+4) Map Reduce tasks			Container [ JVM ]
+
+5) 64 MB					128 MB
+
+6) ******* [ JT was doing this]			Application Master
+
+============================> Spark
+
+--> It is used for processing data
+
+--> It supports multiple work loads --> use Spark SQL, Spark Streaming, ML Lib, Graphx all using the same abstraction --> RDD [ Resilient Distributed Dataset ] 
+
+200 MB file.
+
+				Spark --> 2 blocks
+
+1	2	3	4	5	6	7	8	9
+	128				72
+
+
+--> Processing happens in Memory. Even can even cache the data --> Hence It needs heavy duty systems.
+
+What happens in Map Reduce --> 2 jobs
+
+M1	--> Intermediate --> R1 [ reads ]	--> writes to HDFS --> M2 [ reads ] 
+M2	--> Intermediate --> R2 [ reads ]  ====> IO
+
+How is is Resilient --> It is because i know the lineage [ set of transformation ] 
+
+
+--> We can write in multiple languages like java, scala, python and R
+
+--> In MR, we only had map and reduce as the business logic functions, over here we have mutiple transformations and actions. ** http://spark.apache.org/docs/latest/programming-guide.html
+
+--> Spark can run on any datastore - Hadoop, Mesos, HBase, Cassandra or S3.
+
+
+
+
+
+
+
